@@ -1,4 +1,4 @@
-const { Tweet, User } = require('../models')
+const { Tweet, User, Like } = require('../models')
 const dayjs = require('dayjs')
 const relativeTime = require('dayjs/plugin/relativeTime'); 
 dayjs.extend(relativeTime)
@@ -42,6 +42,7 @@ const adminServices = {
   getUsers: (req, cb) => {
     User.findAll({
       raw: true,
+      include: [Like]
     })
       .then(users => {
         cb(null, users )

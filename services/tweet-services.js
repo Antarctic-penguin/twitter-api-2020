@@ -52,7 +52,7 @@ const tweetServices = {
       Tweet.findByPk(tweetId),
       Like.findOne({
         where: {
-          UserId: req.user.id,
+          UserId: helpers.getUser(req).id,
           TweetId: tweetId
         }
       })
@@ -61,7 +61,7 @@ const tweetServices = {
         if (!tweet) throw new Error("tweet didn't exist!")
         if (like) throw new Error('You have favorited this tweet!')
         return Like.create({
-          UserId: req.user.id,
+          UserId:  helpers.getUser(req).id,
           TweetId: tweet.id
         })
       })
@@ -69,10 +69,11 @@ const tweetServices = {
       .catch(err => cb(err))
   },
   removeLike: (req, cb) => {
+    const tweetId = req.params.id
     return Like.findOne({
       where: {
-        UserId: req.user.id,
-        TweetId: req.params.id
+        UserId: helpers.getUser(req).id,
+        TweetId: tweetId
       }
     })
       .then(like => {
