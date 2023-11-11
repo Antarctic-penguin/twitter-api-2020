@@ -1,4 +1,4 @@
-const { Tweet } = require('../models')
+const { Tweet, Like } = require('../models')
 const dayjs = require('dayjs')
 const relativeTime = require('dayjs/plugin/relativeTime'); 
 dayjs.extend(relativeTime);
@@ -45,6 +45,44 @@ const tweetServices = {
       Tweet.create({ UserId, description })
         .then(newTweet => cb(null,  {tweet: newTweet} ))
         .catch(err => cb(err))
+  },
+  addLike: (req, cb) => {
+    const tweetId = req.params.id
+    return Promise.all([
+      Tweet.findByPk(tweetId),
+      Like.findOne({
+        where: {
+          UserId: helpers.getUser(req).id,
+          TweetId: tweetId
+        }
+      })
+    ])
+      .then(([tweet, like]) => {
+        if (!tweet) throw new Error("tweet didn't exist!")
+        if (like) throw new Error('You have favorited this tweet!')
+        return Like.create({
+          UserId:  helpers.getUser(req).id,
+          TweetId: tweet.id
+        })
+      })
+      .then(addLike => cb(null,  {tweet: addLike} ))
+      .catch(err => cb(err))
+  },
+  removeLike: (req, cb) => {
+    const tweetId = req.params.id
+    return Like.findOne({
+      where: {
+        UserId: helpers.getUser(req).id,
+        TweetId: tweetId
+      }
+    })
+      .then(like => {
+        if (!like) throw new Error("You haven't favorited this tweet")
+
+        return like.destroy()
+      })
+      .then(removeLike => cb(null,  {tweet: removeLike} ))
+      .catch(err => cb(err))
   }
 }
 module.exports = tweetServices

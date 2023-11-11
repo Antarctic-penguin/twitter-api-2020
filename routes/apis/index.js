@@ -9,11 +9,12 @@ const { apiErrorHandler } = require('../../middleware/error-handler')
 
 router.use('/admin', authenticated, authenticatedAdmin, admin)
 router.post('/signin', passport.authenticate('local', { session: false }), userController.signIn) 
+router.post('/tweets/:id/like', authenticated, tweetController.addLike)
+router.post('/tweets/:id/unlike', authenticated, tweetController.removeLike)
 router.get('/tweets/:id', authenticated, tweetController.getTweet)
 router.get('/tweets', tweetController.getTweets)
 router.post('/tweets',authenticated ,tweetController.postTweet)
-router.post('/like/:tweetId', authenticated, userController.addLike)
-router.delete('/like/:tweetId', authenticated, userController.removeLike)
+
 
 router.use('/', apiErrorHandler)
 
