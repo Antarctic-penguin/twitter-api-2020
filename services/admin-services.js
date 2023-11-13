@@ -1,18 +1,24 @@
-const { Tweet, User, Like } = require('../models')
+const { Tweet, User, Like, Reply } = require('../models')
 const dayjs = require('dayjs')
 const relativeTime = require('dayjs/plugin/relativeTime'); 
 dayjs.extend(relativeTime)
+const helpers = require('../_helpers')
 const adminServices = {
   getTweets: (req, cb) => {
-    Tweet.findAll({
-      raw: true,
-    })
-    .then(tweets => {
+    const UserId = helpers.getUser(req).id
+    return Promise.all([
+      Like.findAll({where: { userId: UserId}}),
+      Reply.findAll({where: { userId: UserId}}),
+      Tweet.findAll({raw: true,include: [User]})
+    ])
+    .then(([likes, replies, tweets]) => {
       for(let i = 0; i < tweets.length; i++) {
         const createdAtDate = dayjs(tweets[i].createdAt);
         const updatedAtDate = dayjs(tweets[i].updatedAt);
         tweets[i].createdAt = createdAtDate.fromNow()
         tweets[i].updatedAt = updatedAtDate.fromNow()
+        tweets[i]["likeCount"] = likes.length
+        tweets[i]["replyCount"] = replies.length
       }
       cb(null, tweets);
     })
